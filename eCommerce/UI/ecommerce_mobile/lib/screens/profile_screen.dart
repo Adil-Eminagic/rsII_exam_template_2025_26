@@ -7,6 +7,7 @@ import 'package:ecommerce_mobile/utils/utils_widgets.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../main.dart' hide alertBox;
 import '../models/user.dart';
 import '../providers/user_provider.dart';
 
@@ -181,7 +182,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (leave != true || !mounted) return;
                 context.read<AuthProvider>().logout();
                 if (!mounted) return;
-                Navigator.of(context).popUntil((route) => route.isFirst);
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (context) => LoginPage()),
+                  (route) => route.isFirst,
+                );
               },
             ),
           ],

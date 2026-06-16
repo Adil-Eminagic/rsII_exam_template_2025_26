@@ -17,18 +17,19 @@ class _ContainerScreenState extends State<ContainerScreen> {
   int _selectedIndex = 0;
   bool isIndexStacked = false;
   int _previousCartCount = 0;
+  late CartProvider _cartProvider;
 
   @override
   void initState() {
     super.initState();
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    _previousCartCount = _totalQuantity(cartProvider);
-    cartProvider.addListener(_onCartChanged);
+    _cartProvider = Provider.of<CartProvider>(context, listen: false);
+    _previousCartCount = _totalQuantity(_cartProvider);
+    _cartProvider.addListener(_onCartChanged);
   }
 
   @override
   void dispose() {
-    Provider.of<CartProvider>(context, listen: false).removeListener(_onCartChanged);
+    _cartProvider.removeListener(_onCartChanged);
     super.dispose();
   }
 
@@ -37,8 +38,7 @@ class _ContainerScreenState extends State<ContainerScreen> {
   }
 
   void _onCartChanged() {
-    final cartProvider = Provider.of<CartProvider>(context, listen: false);
-    final newCount = _totalQuantity(cartProvider);
+    final newCount = _totalQuantity(_cartProvider);
     if (newCount > _previousCartCount) {
       print('Item added to cart. Total items in cart: $newCount');
     }
@@ -51,7 +51,7 @@ class _ContainerScreenState extends State<ContainerScreen> {
     ProductListScreen(),
     CategoryListScreen(),
     CartListScreen(onGoToHome: () => _onItemTapped(0)),
-    ProfileScreen()
+    ProfileScreen(),
   ];
 
   void _onItemTapped(int index) {
@@ -63,7 +63,9 @@ class _ContainerScreenState extends State<ContainerScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: isIndexStacked ? IndexedStack(index: _selectedIndex, children: _widgetOptions) :  _widgetOptions.elementAt(_selectedIndex), 
+      body: isIndexStacked
+          ? IndexedStack(index: _selectedIndex, children: _widgetOptions)
+          : _widgetOptions.elementAt(_selectedIndex),
       bottomNavigationBar: BottomNavigationBar(
         type: BottomNavigationBarType.fixed,
         items: <BottomNavigationBarItem>[
@@ -73,10 +75,17 @@ class _ContainerScreenState extends State<ContainerScreen> {
             label: 'Categories',
           ),
           BottomNavigationBarItem(
-            icon: Icon(_previousCartCount > 0 ? Icons.shopping_cart : Icons.shopping_cart_outlined),
+            icon: Icon(
+              _previousCartCount > 0
+                  ? Icons.shopping_cart
+                  : Icons.shopping_cart_outlined,
+            ),
             label: 'Cart',
           ),
-          const BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.person),
+            label: 'Profile',
+          ),
         ],
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
